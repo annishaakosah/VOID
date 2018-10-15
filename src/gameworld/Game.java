@@ -22,7 +22,6 @@ public class Game {
     this.board = Arrays.copyOf(board, board.length);
     this.currentRoom = player.getRoom();
     connectPortals();
-    setupTimer();
 
   }
 
@@ -141,20 +140,6 @@ public class Game {
     }
   }
 
-  public void setupTimer() {
-
-    timer = new Timer();
-    timer.schedule(new TimerTask() {
-
-      @Override
-      public void run() {
-        player.loseHealth();
-      }
-
-    }, 0, 1000);
-
-  }
-
   public void pickUpItem() {
 
     AccessibleTile tile = player.getTile();
@@ -241,8 +226,14 @@ public class Game {
       VendingMachine vendingMachine = (VendingMachine) challenge;
       Direction vmDirection = vendingMachine.getDirection();
 
-      if (!direction.getOppositeDirection().equals(vmDirection)) {
-        return;
+      if (vmDirection == Direction.EAST || vmDirection == Direction.WEST) {
+        if (!vmDirection.equals(direction)) {
+          return;
+        }
+      } else {
+        if (!direction.getOppositeDirection().equals(vmDirection)) {
+          return;
+        }
       }
 
       if (!vendingMachine.isUnlocked()) {
@@ -275,8 +266,14 @@ public class Game {
       VendingMachine vendingMachine = (VendingMachine) challenge;
       Direction vmDirection = vendingMachine.getDirection();
 
-      if (!direction.getOppositeDirection().equals(vmDirection)) {
-        return;
+      if (vmDirection == Direction.EAST || vmDirection == Direction.WEST) {
+        if (!vmDirection.equals(direction)) {
+          return;
+        }
+      } else {
+        if (!direction.getOppositeDirection().equals(vmDirection)) {
+          return;
+        }
       }
 
       if (vendingMachine.isUnlocked()) {
@@ -310,11 +307,6 @@ public class Game {
     if (challenge instanceof Alien) {
 
       Alien alien = (Alien) challenge;
-      Direction guardDirection = alien.getDirection();
-
-      if (!direction.getOppositeDirection().equals(guardDirection)) {
-        return;
-      }
 
       if (!alien.isNavigable()) {
 
@@ -324,6 +316,10 @@ public class Game {
 
           player.dropItem();
           alien.setNavigable(true);
+          Direction nextDirection =
+              (player.getDirection() == Direction.NORTH || player.getDirection() == Direction.SOUTH) ?
+                  player.getDirection().getOppositeDirection() : player.getDirection();
+          alien.setDirection(nextDirection);
           System.out.println("Alien bribed with potion");
 
         }
@@ -375,7 +371,6 @@ public class Game {
   public void rotateRoomClockwise() {
 
     player.setDirection(player.getDirection().getClockwiseDirection());
-    rotateObjectsClockwise();
     for (int row = 0; row < board.length; row++) {
       for (int col = 0; col < board[row].length; col++) {
         Room room = board[row][col];
@@ -391,7 +386,6 @@ public class Game {
   public void rotateRoomAnticlockwise() {
 
     player.setDirection(player.getDirection().getAnticlockwiseDirection());
-    rotateObjectsAnticlockwise();
     for (int row = 0; row < board.length; row++) {
       for (int col = 0; col < board[row].length; col++) {
         Room room = board[row][col];
@@ -402,40 +396,6 @@ public class Game {
       }
     }
 
-  }
-
-  public void rotateObjectsAnticlockwise() {
-    for (int row = 0; row < Room.ROOMSIZE; row++) {
-      for (int col = 0; col < Room.ROOMSIZE; col++) {
-        if (currentRoom.getTile(row, col) instanceof AccessibleTile) {
-          AccessibleTile tile = (AccessibleTile) currentRoom.getTile(row, col);
-          if (tile.hasItem()) {
-            Item item = tile.getItem();
-            item.setDirection(item.getDirection().getAnticlockwiseDirection());
-          } else if (tile.hasChallenge()) {
-            ChallengeItem challenge = tile.getChallenge();
-            challenge.setDirection(challenge.getDirection().getAnticlockwiseDirection());
-          }
-        }
-      }
-    }
-  }
-
-  public void rotateObjectsClockwise() {
-    for (int row = 0; row < Room.ROOMSIZE; row++) {
-      for (int col = 0; col < Room.ROOMSIZE; col++) {
-        if (currentRoom.getTile(row, col) instanceof AccessibleTile) {
-          AccessibleTile tile = (AccessibleTile) currentRoom.getTile(row, col);
-          if (tile.hasItem()) {
-            Item item = tile.getItem();
-            item.setDirection(item.getDirection().getClockwiseDirection());
-          } else if (tile.hasChallenge()) {
-            ChallengeItem challenge = tile.getChallenge();
-            challenge.setDirection(challenge.getDirection().getClockwiseDirection());
-          }
-        }
-      }
-    }
   }
 
   public Room[][] getBoard() {
