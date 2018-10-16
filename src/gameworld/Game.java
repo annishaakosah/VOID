@@ -1,13 +1,12 @@
 package gameworld;
 
-import java.awt.Point;
 import java.util.Arrays;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * This is the main class the contains the logic for game play. It also connects
  * the rooms va their doors so that players can move between rooms.
+ *
+ * @author Latrell Whata 300417220
  */
 public class Game {
 
@@ -15,6 +14,12 @@ public class Game {
   private Player player;
   private Room currentRoom;
 
+  /**
+   * This constructor creates a new void game.
+   *
+   * @param board  the 2D array of room objects that make up the game
+   * @param player the current game player
+   */
   public Game(Room[][] board, Player player) {
 
     this.player = player;
@@ -24,11 +29,18 @@ public class Game {
 
   }
 
+  /**
+   * This method moves the player from its current position to a new tile.
+   *
+   * @param dx the difference between the row values
+   * @param dy the difference between the column values
+   */
   public void movePlayer(int dx, int dy) {
 
     AccessibleTile currentTile = player.getTile();
     Direction nextDirection = player.getDirection().nextDirection(dx, dy);
 
+    // only change direction of player
     if (player.changeDirection(nextDirection)) {
       return;
     }
@@ -45,10 +57,14 @@ public class Game {
 
   }
 
+  /**
+   * This method moves a player to an adjacent room.
+   */
   public void teleport() {
 
     if (player.getTile() instanceof Portal) {
 
+      // find neighbouring room
       Portal portal = (Portal) player.getTile();
       Room nextRoom = portal.getNeighbour();
 
@@ -56,6 +72,7 @@ public class Game {
         return;
       }
 
+      // next portal is in the adjacent room, in the opposite direction of the current portal
       Direction oppositeDirection = portal.getDirection().getOppositeDirection();
       Portal destination = nextRoom.getDestinationPortal(oppositeDirection);
 
@@ -63,6 +80,7 @@ public class Game {
         return;
       }
 
+      // update player position, relevant tiles
       destination.setPlayer(true);
       portal.setPlayer(false);
       currentRoom = nextRoom;
@@ -73,11 +91,16 @@ public class Game {
 
   }
 
+  /**
+   * This method connects each portal to the neighbouring room.
+   */
   private void connectPortals() {
-    final Point northPortal = new Point(0, 5);
-    final Point southPortal = new Point(9, 5);
-    final Point eastPortal = new Point(5, 9);
-    final Point westPortal = new Point(5, 0);
+
+    // row, col values for each portal
+    final int[] northPortal = new int[]{0, 5};
+    final int[] southPortal = new int[]{9, 5};
+    final int[] eastPortal = new int[]{5, 9};
+    final int[] westPortal = new int[]{5, 0};
 
     Portal portal = null;
     int x = -1;
@@ -92,35 +115,36 @@ public class Game {
           continue;
         }
 
+        // iterate through each door within a room
         for (String direction : room.getDoors()) {
 
           switch (direction) {
 
             case "NORTH":
               if (row > 0) {
-                x = northPortal.x;
-                y = northPortal.y;
+                x = northPortal[0];
+                y = northPortal[1];
                 portal = new Portal(x, y, board[row - 1][col], Direction.NORTH);
               }
               break;
             case "SOUTH":
               if (row < board[row].length - 1) {
-                x = southPortal.x;
-                y = southPortal.y;
+                x = southPortal[0];
+                y = southPortal[1];
                 portal = new Portal(x, y, board[row + 1][col], Direction.SOUTH);
               }
               break;
             case "EAST":
               if (col < board.length - 1) {
-                x = eastPortal.x;
-                y = eastPortal.y;
+                x = eastPortal[0];
+                y = eastPortal[1];
                 portal = new Portal(x, y, board[row][col + 1], Direction.EAST);
               }
               break;
             case "WEST":
               if (col > 0) {
-                x = westPortal.x;
-                y = westPortal.y;
+                x = westPortal[0];
+                y = westPortal[1];
                 portal = new Portal(x, y, board[row][col - 1], Direction.WEST);
               }
               break;
@@ -128,6 +152,7 @@ public class Game {
 
           }
 
+          // create portals and add them to the corresponding rooms
           if (portal != null && x > -1 && y > -1) {
             room.addPortal(portal);
             room.setTile(portal, x, y);
@@ -138,11 +163,8 @@ public class Game {
     }
   }
 
-<<<<<<< HEAD
-  public void pickUpItem() {
-=======
+
   public String pickUpItem() {
->>>>>>> acfbcd9a921041fd5974248405cfe4727fc68a4d
 
     AccessibleTile tile = player.getTile();
 
@@ -150,7 +172,7 @@ public class Game {
 
       if (player.hasItem()) {
         System.out.println("Player may only have one item at a time");
-        return "Player may only have one item at a time";
+        return "You may only carry one item at a time";
       }
 
       Item item = tile.getItem();
@@ -159,20 +181,20 @@ public class Game {
       item.setRow(-1);
       item.setCol(-1);
       System.out.println("Player picked up " + item.toString());
-      return "player picked up";
+      return "You picked up " + item.getName();
 
     }
 
     else
-      return "tile does not have item";
+      return "Tile does not have an item you can pick up";
   }
 
-  public void dropItem() {
+  public String dropItem() {
 
     AccessibleTile tile = player.getTile();
 
     if (tile instanceof Portal) {
-      return;
+      return "You can't drop an item on a portal!";
     }
 
     if (!tile.hasItem() && !tile.hasChallenge() && player.hasItem()) {
@@ -182,12 +204,14 @@ public class Game {
       item.setCol(tile.getCol());
       tile.setItem(item);
       System.out.println("Player dropped " + item.toString());
-
+      return "You dropped " + item.getName();
     }
+
+    return "You don't have any items to drop";
 
   }
 
-  public void diffuseBomb() {
+  public String diffuseBomb() {
 
     AccessibleTile tile = player.getTile();
     Direction direction = player.getDirection();
@@ -195,7 +219,7 @@ public class Game {
     ChallengeItem challenge = this.currentRoom.getAdjacentChallenge(tile, direction);
 
     if (challenge == null) {
-      return;
+      return "There is no bomb to be diffused";
     }
 
     if (challenge instanceof Bomb) {
@@ -208,14 +232,15 @@ public class Game {
 
         if (item instanceof Diffuser) {
           bomb.setNavigable(true);
-          System.out.println("Bomb diffused with diffuser");
+          return "Bomb successfully diffused";
         }
 
       }
     }
+    return "You do not have a diffuser to diffuse the bomb!";
   }
 
-  public void unlockVendingMachine() {
+  public String unlockVendingMachine() {
 
     AccessibleTile tile = player.getTile();
     Direction direction = player.getDirection();
@@ -223,7 +248,7 @@ public class Game {
     ChallengeItem challenge = this.currentRoom.getAdjacentChallenge(tile, direction);
 
     if (challenge == null) {
-      return;
+      return "There is no vending machine to be unlocked";
     }
 
     if (challenge instanceof VendingMachine) {
@@ -233,11 +258,11 @@ public class Game {
 
       if (vmDirection == Direction.EAST || vmDirection == Direction.WEST) {
         if (!vmDirection.equals(direction)) {
-          return;
+          return "";
         }
       } else {
         if (!direction.getOppositeDirection().equals(vmDirection)) {
-          return;
+          return "";
         }
       }
 
@@ -247,15 +272,15 @@ public class Game {
 
         if (item instanceof BoltCutter) {
           vendingMachine.setUnlocked(true);
-          System.out.println("Chains are removed from Vending machine");
-          System.out.println("Vending machine is available for use");
+          return "Vending machine successfully unlocked and ready to use";
         }
-
       }
     }
+
+    return "You do not have the bolt cutter to unlock the vending machine!";
   }
 
-  public void useVendingMachine() {
+  public String useVendingMachine() {
 
     AccessibleTile tile = player.getTile();
     Direction direction = player.getDirection();
@@ -263,7 +288,7 @@ public class Game {
     ChallengeItem challenge = this.currentRoom.getAdjacentChallenge(tile, direction);
 
     if (challenge == null) {
-      return;
+      return "There is no vending machine to be used";
     }
 
     if (challenge instanceof VendingMachine) {
@@ -273,11 +298,11 @@ public class Game {
 
       if (vmDirection == Direction.EAST || vmDirection == Direction.WEST) {
         if (!vmDirection.equals(direction)) {
-          return;
+          return "";
         }
       } else {
         if (!direction.getOppositeDirection().equals(vmDirection)) {
-          return;
+          return "";
         }
       }
 
@@ -291,14 +316,15 @@ public class Game {
           player.addItem(new Potion(-1, -1, "NORTH"));
           System.out.println("Placed coin into vending machine...");
           System.out.println("Pick up the potion that is dispensed");
+          return "Magic potion successfully dispensed from vending machine";
 
         }
       }
     }
-
+    return "You do not have a coin to unlock the vending machine!";
   }
 
-  public void bribeGuard() {
+  public String befriendAlien() {
 
     AccessibleTile tile = player.getTile();
     Direction direction = player.getDirection();
@@ -306,7 +332,7 @@ public class Game {
     ChallengeItem challenge = this.currentRoom.getAdjacentChallenge(tile, direction);
 
     if (challenge == null) {
-      return;
+      return "There is no Alien to befriend";
     }
 
     if (challenge instanceof Alien) {
@@ -322,18 +348,19 @@ public class Game {
           player.dropItem();
           alien.setNavigable(true);
           Direction nextDirection =
-              (player.getDirection() == Direction.NORTH || player.getDirection() == Direction.SOUTH) ?
-                  player.getDirection().getOppositeDirection() : player.getDirection();
+              (direction == Direction.NORTH || direction == Direction.SOUTH)
+                  ? direction.getOppositeDirection() : direction;
           alien.setDirection(nextDirection);
-          System.out.println("Alien bribed with potion");
+          System.out.println("Alien befriended with potion");
+          return "Alien successfully befriended";
 
         }
       }
     }
-
+    return "You do not have the magic potion to befriend the Alien!";
   }
 
-  public void checkForHealthPack() {
+  public void checkForOxygenTank() {
 
     AccessibleTile currentTile = player.getTile();
 
@@ -342,7 +369,7 @@ public class Game {
       Item item = currentTile.getItem();
 
       if (item instanceof OxygenTank) {
-        player.boostHealth();
+        player.boostOxygen();
         currentTile.setItem(null);
       }
 
@@ -350,7 +377,12 @@ public class Game {
 
   }
 
-  public boolean checkForAntidote() {
+  /**
+   * This method checks if the player has found it's spaceship.
+   *
+   * @return whether or not the spaceship is on the player tile
+   */
+  public boolean checkForSpaceship() {
 
     AccessibleTile currentTile = player.getTile();
 
@@ -362,6 +394,14 @@ public class Game {
 
   }
 
+  /**
+   * This method is a helper for the test class. It enables a
+   * player to be directly moved to a room at a specific tile.
+   *
+   * @param room the destination room
+   * @param row  the row value of the new player tile
+   * @param col  the column value of the new player tile
+   */
   public void directTeleport(Room room, int row, int col) {
 
     AccessibleTile tile = player.getTile();
@@ -373,11 +413,17 @@ public class Game {
 
   }
 
+  /**
+   * This method rotates the every room on the board clockwise.
+   */
   public void rotateRoomClockwise() {
 
+    // update the player direction
     player.setDirection(player.getDirection().getClockwiseDirection());
+
     for (int row = 0; row < board.length; row++) {
       for (int col = 0; col < board[row].length; col++) {
+
         Room room = board[row][col];
         if (room == null) {
           continue;
@@ -388,11 +434,17 @@ public class Game {
 
   }
 
+  /**
+   * This method rotates the every room on the board anticlockwise.
+   */
   public void rotateRoomAnticlockwise() {
 
+    // update the player direction
     player.setDirection(player.getDirection().getAnticlockwiseDirection());
+
     for (int row = 0; row < board.length; row++) {
       for (int col = 0; col < board[row].length; col++) {
+
         Room room = board[row][col];
         if (room == null) {
           continue;
@@ -403,14 +455,29 @@ public class Game {
 
   }
 
+  /**
+   * This method is a getter for the game board.
+   *
+   * @return the current game board
+   */
   public Room[][] getBoard() {
     return Arrays.copyOf(board, board.length);
   }
 
+  /**
+   * This method is a getter for the game player.
+   *
+   * @return the current game player
+   */
   public Player getPlayer() {
     return player;
   }
 
+  /**
+   * This method is a getter for the current room for the game.
+   *
+   * @return the current game room
+   */
   public Room getCurrentRoom() {
     return currentRoom;
   }
