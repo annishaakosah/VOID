@@ -105,6 +105,11 @@ public class GameworldTests {
     game.movePlayer(1, 0);
     game.movePlayer(1, 0);
 
+    // edge cases
+
+    game.pickUpItem();
+    game.dropItem();
+
     AccessibleTile nextTile = player.getTile();
 
     assertNotEquals(startTile, nextTile);
@@ -338,6 +343,10 @@ public class GameworldTests {
 
     game.useVendingMachine();
 
+    // extra test case for edge case
+
+    game.befriendAlien();
+
     assertFalse(player.getItem() instanceof Coin);
     assertTrue(player.getItem() instanceof Potion);
 
@@ -377,6 +386,12 @@ public class GameworldTests {
     player.setDirection(Direction.WEST);
 
     game.befriendAlien();
+
+    // extra test cases for edge cases
+
+    game.diffuseBomb();
+    game.unlockVendingMachine();
+    game.useVendingMachine();
 
     assertTrue(alien.isNavigable());
     assertFalse(player.getItem() instanceof Potion);

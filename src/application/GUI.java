@@ -50,7 +50,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.*;
 
-//TODO fix health bar with a longer length
 //TODO win/lose dialog
 <<<<<<< HEAD
 //TODO print sensible messages to screen
@@ -87,6 +86,7 @@ public class GUI extends Application implements EventHandler<KeyEvent>{
   private Scene startScene, gameScene, levelsScene;
 >>>>>>> acfbcd9a921041fd5974248405cfe4727fc68a4d
   private ProgressBar pBar;
+  private Boolean pause = false;
 
   // Game components
   private Renderer renderer;
@@ -106,6 +106,73 @@ public class GUI extends Application implements EventHandler<KeyEvent>{
     window.setResizable(false);
     window.setTitle("Void");
     window.show();
+  }
+
+  @Override
+  public void handle(KeyEvent event) {
+    int dx = 0;
+    int dy = 0;
+    String str = "";
+
+    switch (event.getCode()) {
+      case UP:
+        dx = -1;
+        break;
+      case LEFT:
+        dy = -1;
+        break;
+      case DOWN:
+        dx = 1;
+        break;
+      case RIGHT:
+        dy = 1;
+        break;
+      case A:
+        currentGame.rotateRoomAnticlockwise();
+        break;
+      case D:
+        currentGame.rotateRoomClockwise();
+        break;
+      case Z:
+        str = currentGame.pickUpItem();
+        break;
+      case X:
+        str = currentGame.dropItem();
+        break;
+      case N:
+        str = currentGame.diffuseBomb();
+        break;
+      case C:
+        str = currentGame.unlockVendingMachine();
+        break;
+      case V:
+        str = currentGame.useVendingMachine();
+        break;
+      case SPACE:
+        currentGame.teleport();
+        renderer.newRoom();
+        break;
+      case B:
+        str = currentGame.bribeGuard();
+        break;
+      default:
+
+    }
+    if (!(dx == 0 && dy == 0)) {
+
+      currentGame.movePlayer(dx, dy);
+
+      if (currentGame.checkForAntidote()) {
+        System.out.println("Winner winner");
+        System.exit(0);
+      }
+      currentGame.checkForHealthPack();
+    }
+
+    renderer.draw();
+    updateInventory();
+    updateScreen(str);
+
   }
 
   /**
@@ -342,6 +409,7 @@ public class GUI extends Application implements EventHandler<KeyEvent>{
     // help
     Label help = new Label("Help");
     help.setOnMouseClicked(mouseEvent -> {
+      pause = true;
       displayHelp();
     });
     Menu helpMenu = new Menu("", help);
@@ -615,13 +683,18 @@ public class GUI extends Application implements EventHandler<KeyEvent>{
 
   /**
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> acfbcd9a921041fd5974248405cfe4727fc68a4d
    * JAMES??????????
 =======
    * Dec
 >>>>>>> e2a21d5f1a034f4f53f083625b9c25b3c5360221
+=======
+   * Updates the length of the health bar based on time. Each second represents
+   * a drop in the health bar.
+>>>>>>> 925b61cf10a273378db0806d9c195d4537815e8d
    * @param health the players health
-   * @return
+   * @return a new task to keep track of time passing
    */
 <<<<<<< HEAD
   private Task taskCreator(int health){
@@ -642,8 +715,8 @@ public class GUI extends Application implements EventHandler<KeyEvent>{
       protected Object call() throws Exception {
         for(int i = currentGame.getPlayer().getOxygen(); i > 0; i = currentGame.getPlayer().getOxygen()){
           Thread.sleep(1000);
-          updateProgress(currentGame.getPlayer().getOxygen(), health);
-          currentGame.getPlayer().loseOxygen();
+          updateProgress(currentGame.getPlayer().getHealth(), health);
+          if (!pause) currentGame.getPlayer().loseHealth();
         }
        //END GAME
         return true;
@@ -943,6 +1016,7 @@ public class GUI extends Application implements EventHandler<KeyEvent>{
       options.setEffect(null);
       screen.setEffect(null);
       helpDialog.hide();
+      pause = false;
     });
 
     helpDialog.show();
