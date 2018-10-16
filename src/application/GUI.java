@@ -153,7 +153,7 @@ public class GUI extends Application implements EventHandler<KeyEvent>{
         renderer.newRoom();
         break;
       case B:
-        str = currentGame.bribeGuard();
+        str = currentGame.befriendAlien();
         break;
       default:
 
@@ -162,11 +162,11 @@ public class GUI extends Application implements EventHandler<KeyEvent>{
 
       currentGame.movePlayer(dx, dy);
 
-      if (currentGame.checkForAntidote()) {
+      if (currentGame.checkForSpaceship()) {
         System.out.println("Winner winner");
         System.exit(0);
       }
-      currentGame.checkForHealthPack();
+      currentGame.checkForOxygenTank();
     }
 
     renderer.draw();
@@ -205,10 +205,14 @@ public class GUI extends Application implements EventHandler<KeyEvent>{
     ImageView newGameIcon = new ImageView(newImage);
     newGame.setGraphic(newGameIcon);
 <<<<<<< HEAD
+<<<<<<< HEAD
     newGame.setOnAction(Event -> startNewGame(stage));
 =======
     newGame.setOnAction(Event -> window.setScene(createLevelsScreen(stage)));
 >>>>>>> acfbcd9a921041fd5974248405cfe4727fc68a4d
+=======
+      newGame.setOnAction(Event -> window.setScene(createLevelsScreen(stage)));
+>>>>>>> 99f4c107644fb8eade3a907b7b2ef4f50a925dc3
 
     // load
     Button load = new Button();
@@ -715,8 +719,8 @@ public class GUI extends Application implements EventHandler<KeyEvent>{
       protected Object call() throws Exception {
         for(int i = currentGame.getPlayer().getOxygen(); i > 0; i = currentGame.getPlayer().getOxygen()){
           Thread.sleep(1000);
-          updateProgress(currentGame.getPlayer().getHealth(), health);
-          if (!pause) currentGame.getPlayer().loseHealth();
+          updateProgress(currentGame.getPlayer().getOxygen(), health);
+          if (!pause) currentGame.getPlayer().loseOxygen();
         }
        //END GAME
         return true;
@@ -900,6 +904,7 @@ public class GUI extends Application implements EventHandler<KeyEvent>{
   }
 
 
+<<<<<<< HEAD
   @Override
   public void handle(KeyEvent event) {
     int dx = 0;
@@ -974,6 +979,8 @@ public class GUI extends Application implements EventHandler<KeyEvent>{
 
   }
 
+=======
+>>>>>>> 99f4c107644fb8eade3a907b7b2ef4f50a925dc3
   /**
    * Displays a popup control menu to assist the user with keyboard control
    */
